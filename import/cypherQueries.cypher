@@ -22,9 +22,9 @@ WITH root, link, friend, commonCount, count(DISTINCT other) as totalCount
 
 SET link.relevance = commonCount * 1.0 / totalCount
 
-RETURN root, friend, commonCount, totalCount, commonCount * 1.0 / totalCount as strength 
+RETURN root, friend, commonCount, totalCount, link.relevance 
 
-*** As shorter query ***
+*** As shorter query (also times out) ***
 
 START root = node(*) 
 MATCH (root)-->(link)-->(friend), 
@@ -39,13 +39,10 @@ WHERE root.nodeType! = "kn_Post"
   AND linkC.nodeType! = "kn_Edge"
   AND other.nodeType! = "kn_Post" 
 WITH root, link, friend, count(DISTINCT other) as totalCount, count(DISTINCT common) as commonCount
-
 SET link.relevance = commonCount * 1.0 / totalCount
+RETURN root, friend, commonCount, totalCount, link.relevance 
 
-RETURN root, friend, commonCount, totalCount, commonCount * 1.0 / totalCount as strength 
-
-
-*** With limits to avoid timeout ***
+*** Long query with limits to avoid timeout ***
 
 START root = node(*) 
 MATCH (root)-->(link)-->(friend)
@@ -71,19 +68,9 @@ WITH root, link, friend, commonCount, count(DISTINCT other) as totalCount
 
 SET link.relevance = commonCount * 1.0 / totalCount
 
-RETURN root, friend, commonCount, totalCount, commonCount * 1.0 / totalCount as strength
+RETURN root, friend, commonCount, totalCount, link.relevance
 
-
-
-start root=node(*)
-match root-->other
-where has(root.KN_ID)
-return root, root.KN_ID, count(other) as countRels
-order by countRels desc
-
-
-
-http://localhost:3000/article/:e4f9e2ee-1b23-4e10-b059-2d955fc3810c
+*** A few sample ids ***
 
 artificial intelligence = 1334, e4f9e2ee-1b23-4e10-b059-2d955fc3810c
 javascript = 45, f565f87d-6956-4010-a18d-12fadeabe78e
@@ -94,7 +81,6 @@ START root = node(*)
 WHERE root.nodeType! = "kn_Post" 
 RETURN id(root), root.KN_ID, root.title
 ORDER BY root.title
-
 
 *** List relevancies ***
 
